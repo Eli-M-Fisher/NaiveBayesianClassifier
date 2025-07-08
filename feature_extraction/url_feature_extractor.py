@@ -40,7 +40,37 @@ class URLFeatureExtractor:
         # 10. Favicon
         features['Favicon'] = -1  # Placeholder (requires HTML parsing)
 
-        # ... (משאיר את השאר להשלמה מדורגת)
+        # 11. NonStdPort
+        features['NonStdPort'] = 1 if self.__has_non_standard_port(url) else -1
+
+        # 12. HTTPSDomainURL
+        features['HTTPSDomainURL'] = 1 if "https" in url and "https" in tldextract.extract(url).domain else -1
+
+        # 13. RequestURL
+        features['RequestURL'] = -1  # Placeholder – requires HTML parsing
+
+        # 14. AnchorURL
+        features['AnchorURL'] = 0  # Placeholder – requires HTML parsing
+
+        # 15. LinksInScriptTags
+        features['LinksInScriptTags'] = 0  # Placeholder – requires HTML parsing
+
+        # 16. ServerFormHandler
+        features['ServerFormHandler'] = -1  # Placeholder – requires HTML parsing
+
+        # 17. InfoEmail
+        features['InfoEmail'] = 1 if "mailto:" in url or "info@" in url else -1
+
+        # 18. AbnormalURL
+        ext = tldextract.extract(url)
+        domain_in_url = ext.domain
+        features['AbnormalURL'] = 1 if domain_in_url not in url else -1
+
+        # 19. WebsiteForwarding
+        features['WebsiteForwarding'] = -1  # Placeholder – would need redirect check
+
+        # 20. StatusBarCust
+        features['StatusBarCust'] = -1  # Placeholder – JS-based detection
 
         return features
 
@@ -62,3 +92,10 @@ class URLFeatureExtractor:
             return 0
         else:
             return 1
+
+    def __has_non_standard_port(self, url: str) -> bool:
+        match = re.search(r":(\d+)", url)
+        if match:
+            port = int(match.group(1))
+            return port not in [80, 443]
+        return False
