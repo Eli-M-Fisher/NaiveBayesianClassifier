@@ -1,6 +1,7 @@
 from model.naive_bayes import NaiveBayesClassifier
 from core.data_loader import DataLoader
 from core.classifier_interface import ClassifierInterface
+from feature_extraction.url_feature_extractor import URLFeatureExtractor
 
 class Controller:
     def __init__(self, file_path: str):
@@ -28,3 +29,9 @@ class Controller:
     def run_single_classification(self, record: dict):
         result = self.__interface.classify_record(record)
         print(f"[RESULT] This record was classified as: {result}\n")
+
+    def run_url_classification(self, url: str):
+        extractor = URLFeatureExtractor()
+        features = extractor.extract(url)
+        result = self.__interface.classify_record(features)
+        print(f"[RESULT] The URL was classified as: {result}\n")
