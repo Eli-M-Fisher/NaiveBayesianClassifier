@@ -31,6 +31,10 @@ class Controller:
         print(f"[RESULT] This record was classified as: {result}\n")
 
     def run_url_classification(self, url: str):
+        if self.__classifier is None or not self.__classifier._NaiveBayesClassifier__class_priors:
+            print("[ERROR] Model must be trained before classifying a URL.\n")
+            return
+
         extractor = URLFeatureExtractor()
         features = extractor.extract(url)
         result = self.__interface.classify_record(features)
