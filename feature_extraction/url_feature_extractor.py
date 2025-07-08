@@ -72,6 +72,36 @@ class URLFeatureExtractor:
         # 20. StatusBarCust
         features['StatusBarCust'] = -1  # Placeholder – JS-based detection
 
+        # 21. DisableRightClick
+        features['DisableRightClick'] = -1  # Placeholder – requires JS inspection
+
+        # 22. UsingPopupWindow
+        features['UsingPopupWindow'] = -1  # Placeholder – requires JS inspection
+
+        # 23. IframeRedirection
+        features['IframeRedirection'] = -1  # Placeholder – requires HTML parsing
+
+        # 24. AgeofDomain
+        features['AgeofDomain'] = -1  # Placeholder – requires WHOIS info
+
+        # 25. DNSRecording
+        features['DNSRecording'] = 1 if self.__has_dns_record(url) else -1
+
+        # 26. WebsiteTraffic
+        features['WebsiteTraffic'] = -1  # Placeholder – requires external traffic API
+
+        # 27. PageRank
+        features['PageRank'] = -1  # Placeholder – would need rank API
+
+        # 28. GoogleIndex
+        features['GoogleIndex'] = 1 if self.__is_indexed_by_google(url) else -1
+
+        # 29. LinksPointingToPage
+        features['LinksPointingToPage'] = 0  # Placeholder – backlink API
+
+        # 30. StatsReport
+        features['StatsReport'] = 1 if self.__check_suspicious_keywords(url) else -1
+
         return features
 
     def __is_ip_address(self, url: str) -> bool:
@@ -99,3 +129,19 @@ class URLFeatureExtractor:
             port = int(match.group(1))
             return port not in [80, 443]
         return False
+
+    def __has_dns_record(self, url: str) -> bool:
+        try:
+            domain = tldextract.extract(url).fqdn
+            socket.gethostbyname(domain)
+            return True
+        except Exception:
+            return False
+
+    def __is_indexed_by_google(self, url: str) -> bool:
+        # NOTE: This is a mock – real check requires Google API
+        return "google" in url or "index" in url
+
+    def __check_suspicious_keywords(self, url: str) -> bool:
+        keywords = ["login", "verify", "update", "secure", "account", "banking", "confirm", "ebay", "paypal"]
+        return any(k in url.lower() for k in keywords)
