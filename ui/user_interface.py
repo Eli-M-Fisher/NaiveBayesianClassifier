@@ -9,9 +9,10 @@ class UserInterface:
             print("=== Naive Bayes Classifier ===")
             print("1. Train model")
             print("2. Classify full test file")
-            print("3. Classify a single record")
-            print("4. Exit")
-            choice = input("Enter your choice (1-4): ")
+            print("3. Classify a website URL")
+            print("4. Classify a single record manually")
+            print("5. Exit")
+            choice = input("Enter your choice (1-5): ")
 
             if choice == "1":
                 self.__controller.train_model()
@@ -20,8 +21,11 @@ class UserInterface:
                 self.__controller.run_file_classification()
 
             elif choice == "3":
+                url = input("Enter website URL to classify: ")
+                self.__controller.run_url_classification(url)
+
+            elif choice == "4":
                 print("Enter values for the record:")
-                # Example input loop (assumes same order as dataset)
                 record = {}
                 fields = ['UsingIP', 'LongURL', 'ShortURL', 'Symbol@', 'Redirecting//', 'PrefixSuffix-', 'SubDomains',
                           'HTTPS', 'DomainRegLen', 'Favicon', 'NonStdPort', 'HTTPSDomainURL', 'RequestURL', 'AnchorURL',
@@ -40,7 +44,7 @@ class UserInterface:
 
                 self.__controller.run_single_classification(record)
 
-            elif choice == "4":
+            elif choice == "5":
                 print("Exiting...")
                 break
 
