@@ -1,18 +1,27 @@
 from core.controller import Controller
 
 class UserInterface:
-    def __init__(self, controller: Controller):
-        self.__controller = controller
+    def __init__(self):
+        self.__controller = None
 
     def run(self):
+        print("=== Naive Bayes Classifier (Generic Framework) ===")
+        file_path = input("Enter path to CSV file: ")
+        target_column = input("Enter name of target column: ")
+
+        try:
+            self.__controller = Controller(file_path, target_column)
+        except Exception as e:
+            print(f"[ERROR] Failed to initialize controller: {e}")
+            return
+
         while True:
-            print("=== Naive Bayes Classifier ===")
+            print("\n--- Menu ---")
             print("1. Train model")
-            print("2. Classify full test file")
-            print("3. Classify a website URL")
-            print("4. Classify a single record manually")
-            print("5. Exit")
-            choice = input("Enter your choice (1-5): ")
+            print("2. Classify full test set")
+            print("3. Classify single record")
+            print("4. Exit")
+            choice = input("Enter your choice (1-4): ")
 
             if choice == "1":
                 self.__controller.train_model()
@@ -21,32 +30,23 @@ class UserInterface:
                 self.__controller.run_file_classification()
 
             elif choice == "3":
-                url = input("Enter website URL to classify: ")
-                self.__controller.run_url_classification(url)
-
-            elif choice == "4":
-                print("Enter values for the record:")
+                feature_names = self.__controller.get_feature_names()
                 record = {}
-                fields = ['UsingIP', 'LongURL', 'ShortURL', 'Symbol@', 'Redirecting//', 'PrefixSuffix-', 'SubDomains',
-                          'HTTPS', 'DomainRegLen', 'Favicon', 'NonStdPort', 'HTTPSDomainURL', 'RequestURL', 'AnchorURL',
-                          'LinksInScriptTags', 'ServerFormHandler', 'InfoEmail', 'AbnormalURL', 'WebsiteForwarding',
-                          'StatusBarCust', 'DisableRightClick', 'UsingPopupWindow', 'IframeRedirection', 'AgeofDomain',
-                          'DNSRecording', 'WebsiteTraffic', 'PageRank', 'GoogleIndex', 'LinksPointingToPage',
-                          'StatsReport']
+                print("Enter feature values:")
 
-                for field in fields:
-                    value = input(f"  {field}: ")
+                for name in feature_names:
+                    value = input(f"  {name}: ")
                     try:
-                        record[field] = int(value)
+                        record[name] = int(value)
                     except ValueError:
-                        print(f"[WARNING] Invalid input for {field}, defaulting to 0.")
-                        record[field] = 0
+                        print(f"[WARNING] Invalid input for {name}. Defaulting to 0.")
+                        record[name] = 0
 
                 self.__controller.run_single_classification(record)
 
-            elif choice == "5":
+            elif choice == "4":
                 print("Exiting...")
                 break
 
             else:
-                print("Invalid choice. Please try again.\n")
+                print("Invalid choice. Please try again.")
