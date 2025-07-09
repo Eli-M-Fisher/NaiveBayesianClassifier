@@ -1,36 +1,33 @@
-from model.naive_bayes import NaiveBayesClassifier
 from core.data_loader import DataLoader
 from core.classifier_interface import ClassifierInterface
+from model.naive_bayes import NaiveBayesClassifier
+from inspector.dataset_inspector import DatasetInspector
+
 
 class Controller:
-    def __init__(self, file_path: str, target_column: str):
-        self.__file_path = file_path
-        self.__target_column = target_column
+    def __init__(self):
+        self.__data_loader = DataLoader()
         self.__classifier = NaiveBayesClassifier()
         self.__interface = ClassifierInterface(self.__classifier)
-        self.__train_df = None
-        self.__test_df = None
-        self.__test_labels = None
-        self.__feature_names = []
+        self.__data = None
+        self.__analysis = None
 
-    def train_model(self):
-        loader = DataLoader(self.__file_path, self.__target_column)
-        self.__train_df, self.__test_df, self.__test_labels = loader.load_data()
-        self.__classifier.train(self.__train_df)
-        self.__feature_names = list(self.__train_df.columns[:-1])  # Save for user input
-        print("[SYSTEM] Model training completed successfully.\n")
+    def load_data(self, path: str, target_column: str):
+        self.__data = self.__data_loader.load_data(path, target_column)
+        self.__analysis = DatasetInspector(self.__data).analyze()
+        return self.__data
 
-    def run_file_classification(self):
-        if self.__test_df is None or self.__test_labels is None:
-            print("[ERROR] Model must be trained before classification.\n")
-            return
+    def train(self):
+        if self.__data:
+            self.__interface.train(self.__data)
 
-        accuracy = self.__interface.classify_file(self.__test_df, self.__test_labels)
-        print(f"[RESULT] Final Accuracy: {accuracy:.2f}%\n")
+    def evaluate(self):
+        if self.__data:
+            return self.__interface.evaluate(self.__data)
 
-    def run_single_classification(self, record: dict):
-        result = self.__interface.classify_record(record)
-        print(f"[RESULT] This record was classified as: {result}\n")
+    def classify_record(self, record: dict):
+        return self.__interface.classify_record(record)
 
-    def get_feature_names(self) -> list:
-        return self.__feature_names
+    @property
+    def dataset_analysis(self):
+        return self.__analysis
