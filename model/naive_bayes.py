@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
+import math
 from collections import defaultdict
+
 
 class NaiveBayesClassifier:
     def __init__(self):
@@ -11,6 +13,7 @@ class NaiveBayesClassifier:
     def train(self, df: pd.DataFrame):
         """
         Build the model from the training dataset using Laplace smoothing.
+        Assumes the last column is the target.
         """
         features = df.columns[:-1]
         target_col = df.columns[-1]
@@ -36,32 +39,50 @@ class NaiveBayesClassifier:
 
         print("[MODEL] Training complete.")
 
-    def predict(self, record: dict) -> int:
+    def predict(self, X: pd.DataFrame) -> list:
         """
-        Predict the class of a single record (dictionary of feature_name -> value)
-        """
-        class_probs = {}
-
-        for cls in self.__classes:
-            prob = self.__class_priors[cls]
-            for feature, value in record.items():
-                likelihood = self.__feature_likelihoods[feature].get(value, {}).get(cls)
-                if likelihood is None:
-                    # Unknown value, apply uniform smoothing
-                    likelihood = 1 / (sum(self.__class_priors.values()) + 1)
-                prob *= likelihood
-            class_probs[cls] = prob
-
-        # Return the class with the highest posterior probability
-        return max(class_probs, key=class_probs.get)
-
-    def predict_batch(self, df: pd.DataFrame) -> list:
-        """
-        Predict classes for a DataFrame of records (no target column).
+        Predict classes for each row in a DataFrame.
         """
         predictions = []
-        for _, row in df.iterrows():
-            record = row.to_dict()
-            prediction = self.predict(record)
-            predictions.append(prediction)
+
+        for idx in X.index:
+            log_probs = {}
+
+            for cls in self.__class_priors:
+                # Start with log prior
+                log_prob = math.log(self.__class_priors[cls])
+
+                for feature in self.__feature_likelihoods:
+                    value = X.at[idx, feature]
+
+                    likelihoods_for_value = self.__feature_likelihoods[feature].get(value)
+                    if likelihoods_for_value is None:
+                        likelihood = 1e-6  # Unknown value smoothing
+                    else:
+                        likelihood = likelihoods_for_value.get(cls, 1e-6)
+
+                    log_prob += math.log(likelihood)
+
+                log_probs[cls] = log_prob
+
+            predicted_class = max(log_probs, key=log_probs.get)
+            predictions.append(predicted_class)
+
         return predictions
+
+    def classify_record(self, record: dict) -> int:
+        """
+        Predict a single record by wrapping it in a DataFrame.
+        """
+        df = pd.DataFrame([record])
+        return self.predict(df)[0]
+
+    def evaluate(self, test_df: pd.DataFrame, test_labels: pd.Series) -> float:
+        """
+        Evaluate the model by comparing predictions to the true labels.
+        Returns accuracy as a float between 0 and 1.
+        """
+        predictions = self.predict(test_df)
+        correct = sum(p == t for p, t in zip(predictions, test_labels))
+        accuracy = correct / len(test_labels)
+        return accuracy

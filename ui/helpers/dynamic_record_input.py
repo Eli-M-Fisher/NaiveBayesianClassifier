@@ -1,43 +1,33 @@
 class DynamicRecordInputHelper:
-    def __init__(self, column_metadata: list[dict]):
-        self.column_metadata = column_metadata
+    def __init__(self):
+        pass  # No need to store metadata as a member
 
-    def prompt_for_input(self) -> dict:
-        record = {}
+    def prompt_for_input(self, column_metadata: dict) -> dict:
+        """
+        Prompts the user to enter values for each feature dynamically.
+        Returns a dictionary representing the record.
+        """
         print("\nEnter feature values:")
-        for column in self.column_metadata:
-            name = column["column_name"]
-            dtype = column["inferred_type"]
-            suggestions = column["suggested_values"]
+        record = {}
+
+        for column_name, metadata in column_metadata.items():
+            if column_name == "class":
+                continue  # Skip the target column
+
+            dtype = metadata["dtype"]
 
             while True:
-                prompt = f"  {name}"
-                if suggestions:
-                    prompt += f" (e.g., {', '.join(map(str, suggestions[:3]))})"
-                prompt += f" [{dtype}]: "
-
-                user_input = input(prompt).strip()
-
-                # Try to cast to appropriate type
-                if dtype == "int":
+                value = input(f"{column_name} ({dtype}): ")
+                if dtype in ("int64", "float64"):
                     try:
-                        record[name] = int(user_input)
+                        value = float(value) if "." in value else int(value)
                         break
                     except ValueError:
-                        print("    Please enter a valid integer.")
-                elif dtype == "float":
-                    try:
-                        record[name] = float(user_input)
-                        break
-                    except ValueError:
-                        print("    Please enter a valid number.")
-                elif dtype == "bool":
-                    if user_input.lower() in ("true", "false"):
-                        record[name] = user_input.lower() == "true"
-                        break
-                    else:
-                        print("    Please enter 'true' or 'false'.")
+                        print("Invalid number. Please try again.")
                 else:
-                    record[name] = user_input
+                    value = value.strip()
                     break
+
+            record[column_name] = value
+
         return record
