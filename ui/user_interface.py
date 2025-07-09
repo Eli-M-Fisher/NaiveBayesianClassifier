@@ -1,19 +1,16 @@
 from core.controller import Controller
+from ui.helpers.dynamic_record_input import DynamicRecordInputHelper
+
 
 class UserInterface:
     def __init__(self):
-        self.__controller = None
+        self.controller = Controller()
 
     def run(self):
         print("=== Naive Bayes Classifier (Generic Framework) ===")
-        file_path = input("Enter path to CSV file: ")
-        target_column = input("Enter name of target column: ")
-
-        try:
-            self.__controller = Controller(file_path, target_column)
-        except Exception as e:
-            print(f"[ERROR] Failed to initialize controller: {e}")
-            return
+        csv_path = input("Enter path to CSV file: ").strip()
+        target_column = input("Enter name of target column: ").strip()
+        self.controller.load_data(csv_path, target_column)
 
         while True:
             print("\n--- Menu ---")
@@ -21,32 +18,20 @@ class UserInterface:
             print("2. Classify full test set")
             print("3. Classify single record")
             print("4. Exit")
-            choice = input("Enter your choice (1-4): ")
+            choice = input("Enter your choice (1-4): ").strip()
 
             if choice == "1":
-                self.__controller.train_model()
-
+                self.controller.train()
             elif choice == "2":
-                self.__controller.run_file_classification()
-
+                self.controller.evaluate()
             elif choice == "3":
-                feature_names = self.__controller.get_feature_names()
-                record = {}
-                print("Enter feature values:")
-
-                for name in feature_names:
-                    value = input(f"  {name}: ")
-                    try:
-                        record[name] = int(value)
-                    except ValueError:
-                        print(f"[WARNING] Invalid input for {name}. Defaulting to 0.")
-                        record[name] = 0
-
-                self.__controller.run_single_classification(record)
-
+                metadata = self.controller.get_column_metadata()
+                input_helper = DynamicRecordInputHelper(metadata)
+                record = input_helper.prompt_for_input()
+                prediction = self.controller.predict_single(record)
+                print(f"[PREDICTION] This record was classified as: {prediction}")
             elif choice == "4":
-                print("Exiting...")
+                print("Goodbye!")
                 break
-
             else:
                 print("Invalid choice. Please try again.")
