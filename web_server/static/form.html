@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Naive Bayes Classifier</title>
+</head>
+<body>
+  <h2>Naive Bayes Prediction Form</h2>
+  <form id="predict-form">
+    <textarea id="json-input" rows="20" cols="80">
+{
+  "features": {
+    "UsingIP": 1,
+    "LongURL": 1,
+    "ShortURL": 1,
+    "Symbol@": 1,
+    "Redirecting//": 1,
+    "PrefixSuffix-": -1,
+    "SubDomains": 0,
+    "HTTPS": 1,
+    "DomainRegLen": -1,
+    "Favicon": 1,
+    "NonStdPort": 1,
+    "HTTPSDomainURL": -1,
+    "RequestURL": 1,
+    "AnchorURL": 0,
+    "LinksInScriptTags": -1,
+    "ServerFormHandler": -1,
+    "InfoEmail": 1,
+    "AbnormalURL": 1,
+    "WebsiteForwarding": 0,
+    "StatusBarCust": 1,
+    "DisableRightClick": 1,
+    "UsingPopupWindow": 1,
+    "IframeRedirection": 1,
+    "AgeofDomain": -1,
+    "DNSRecording": -1,
+    "WebsiteTraffic": 0,
+    "PageRank": -1,
+    "GoogleIndex": 1,
+    "LinksPointingToPage": 1,
+    "StatsReport": 1
+  }
+}
+    </textarea><br>
+    <button type="submit">Send Prediction Request</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script>
+    const form = document.getElementById("predict-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const inputData = document.getElementById("json-input").value;
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: inputData
+        });
+        const result = await response.json();
+        document.getElementById("result").innerText = "Prediction: " + result.prediction;
+      } catch (err) {
+        document.getElementById("result").innerText = "Error: " + err;
+      }
+    });
+  </script>
+</body>
+</html>
