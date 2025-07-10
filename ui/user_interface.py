@@ -27,7 +27,7 @@ class UserInterface:
 
             elif choice == "3":
                 metadata = self.controller.get_column_metadata()
-                ignored_columns = self.controller.get_identifier_columns()
+                ignored_columns = self.controller.identifier_columns
                 input_helper = DynamicRecordInputHelper(ignored_columns=ignored_columns)
                 record = input_helper.prompt_for_input(metadata)
                 prediction = self.controller.predict_single(record)

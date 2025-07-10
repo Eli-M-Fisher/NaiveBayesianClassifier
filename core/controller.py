@@ -83,3 +83,7 @@ class Controller:
     @property
     def dataset_analysis(self):
         return self.__analysis
+
+    @property
+    def identifier_columns(self):
+        return self.__identifier_columns
