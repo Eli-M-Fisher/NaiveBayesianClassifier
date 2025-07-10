@@ -11,6 +11,7 @@ class Controller:
         self._data_loader = DataLoader(file_path, target_column)
         self.__classifier = NaiveBayesClassifier()
         self.__inspector = DatasetInspector(file_path)
+        self.__identifier_columns = self.__inspector.get_identifier_columns()
 
         self.__train_data = None
         self.__test_data = None
@@ -24,6 +25,11 @@ class Controller:
         """
         self.__train_data, self.__test_data, self.__test_labels = self._data_loader.load_data()
         self.__inspector.inspect()
+
+        if self.__identifier_columns:
+            print(f"[INFO] Ignored identifier columns during training: {self.__identifier_columns}")
+            self.__train_data = self.__train_data.drop(columns=self.__identifier_columns, errors="ignore")
+            self.__test_data = self.__test_data.drop(columns=self.__identifier_columns, errors="ignore")
 
     def train(self):
         """
@@ -67,6 +73,10 @@ class Controller:
             raise ValueError("Model has not been initialized.")
 
         df = pd.DataFrame([record])
+
+        # Drop identifier columns if they exist
+        df = df.drop(columns=self.__identifier_columns, errors="ignore")
+
         prediction = self.__classifier.predict(df)
         return str(prediction[0])
 
