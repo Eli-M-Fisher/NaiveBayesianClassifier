@@ -1,6 +1,7 @@
 from core.controller import Controller
 from ui.helpers.dynamic_record_input import DynamicRecordInputHelper
 
+
 class UserInterface:
     def __init__(self, file_path: str, target_column: str):
         self.controller = Controller(file_path, target_column)
@@ -26,7 +27,8 @@ class UserInterface:
 
             elif choice == "3":
                 metadata = self.controller.get_column_metadata()
-                input_helper = DynamicRecordInputHelper()
+                ignored_columns = self.controller.identifier_columns
+                input_helper = DynamicRecordInputHelper(ignored_columns=ignored_columns)
                 record = input_helper.prompt_for_input(metadata)
                 prediction = self.controller.predict_single(record)
                 print(f"[PREDICTION] This record was classified as: {prediction}")
