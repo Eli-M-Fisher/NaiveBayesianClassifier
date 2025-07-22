@@ -32,6 +32,7 @@ def predict(input_data: RecordInput):
     logger.info("POST /predict called with input: %s", input_data.features)
 
     try:
+        logger.info("Sending request to classifier service at: %s", CLASSIFIER_URL)
         response = requests.post(
             f"{CLASSIFIER_URL}/predict",
             json={"features": input_data.features},

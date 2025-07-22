@@ -1,22 +1,38 @@
-version: '3.8'
-
 services:
-  api_service:
+  api:
     build:
       context: .
       dockerfile: docker/api.Dockerfile
+    container_name: api_service
     ports:
       - "8000:8000"
-    depends_on:
-      - classifier_service
     environment:
-      - CLASSIFIER_URL=http://classifier_service:9000
+      - CLASSIFIER_URL=http://classifier:9000
+    depends_on:
+      classifier:
+        condition: service_healthy
     volumes:
       - .:/app
+    networks:
+      - app-network
 
-  classifier_service:
+  classifier:
     build:
-      context: ./classifier_service
-      dockerfile: ../docker/classifier.Dockerfile
+      context: .
+      dockerfile: docker/classifier.Dockerfile
+    container_name: classifier_service
     ports:
       - "9000:9000"
+    volumes:
+      - .:/app
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; exit(0) if urllib.request.urlopen('http://localhost:9000/health').status == 200 else exit(1)"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+
+networks:
+  app-network:
+    driver: bridge

@@ -2,9 +2,9 @@ from core.data_loader import DataLoader
 from model.naive_bayes import NaiveBayesClassifier
 from inspector.dataset_inspector import DatasetInspector
 from core.logger import logger
-from core.cleaner import Cleaner  # ← new
-from core.trainer import Trainer  # ← new
-from core.validator import Validator  # ← new
+from core.cleaner import Cleaner
+from core.trainer import Trainer
+from core.validator import Validator
 import pandas as pd
 
 
@@ -16,6 +16,12 @@ class Controller:
         self.__classifier = NaiveBayesClassifier()
         self.__inspector = DatasetInspector(file_path)
         self.__identifier_columns = self.__inspector.get_identifier_columns()
+
+        # Extra manual logic for robustness:
+        if "Index" not in self.__identifier_columns:
+            self.__identifier_columns.append("Index")
+
+        logger.info("Identifier columns used for cleaning: %s", self.__identifier_columns)
 
         self.__train_data = None
         self.__test_data = None
@@ -74,10 +80,27 @@ class Controller:
 
     def classify_record(self, record: dict):
         """
-        Classifies a single record using the trained classifier.
+        Legacy direct classification method.
         """
         logger.info("Classifying single record (legacy classify_record)...")
         return self.__classifier.classify_record(record)
+
+    def predict_single(self, record: dict) -> str:
+        """
+        Classify a single record using the trained model.
+        Ensures identifier columns (like 'Index') are removed first.
+        """
+        df = pd.DataFrame([record])
+
+        logger.info("Input features for prediction: %s", df.columns.tolist())
+
+        # Drop identifier columns safely
+        df = df.drop(columns=self.__identifier_columns, errors="ignore")
+
+        logger.info("Predicting single record via API after cleaning...")
+        prediction = self.__classifier.predict(df)
+        logger.info("Prediction result: %s", prediction[0])
+        return str(prediction[0])
 
     def get_column_metadata(self):
         """
@@ -86,20 +109,6 @@ class Controller:
         """
         metadata = self.__inspector.get_column_metadata()
         return {col: dtype for col, dtype in metadata.items() if col != self.__target_column}
-
-    def predict_single(self, record: dict) -> str:
-        """
-        Classify a single record using the trained model.
-        """
-        df = pd.DataFrame([record])
-
-        # Drop identifier columns if they exist
-        df = df.drop(columns=self.__identifier_columns, errors="ignore")
-
-        logger.info("Predicting single record via API...")
-        prediction = self.__classifier.predict(df)
-        logger.info("Prediction result: %s", prediction[0])
-        return str(prediction[0])
 
     @property
     def dataset_analysis(self):
