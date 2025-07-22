@@ -2,6 +2,9 @@ from core.data_loader import DataLoader
 from model.naive_bayes import NaiveBayesClassifier
 from inspector.dataset_inspector import DatasetInspector
 from core.logger import logger
+from core.cleaner import Cleaner  # ← new
+from core.trainer import Trainer  # ← new
+from core.validator import Validator  # ← new
 import pandas as pd
 
 
@@ -30,11 +33,13 @@ class Controller:
             self.__train_data, self.__test_data, self.__test_labels = self._data_loader.load_data()
             self.__analysis = self.__inspector.inspect()
 
-            if self.__identifier_columns:
-                logger.info("Ignoring identifier columns: %s", self.__identifier_columns)
-                print(f"[INFO] Ignored identifier columns during training: {self.__identifier_columns}")
-                self.__train_data = self.__train_data.drop(columns=self.__identifier_columns, errors="ignore")
-                self.__test_data = self.__test_data.drop(columns=self.__identifier_columns, errors="ignore")
+            # Clean training data
+            train_cleaner = Cleaner(self.__train_data)
+            self.__train_data = train_cleaner.clean(self.__identifier_columns)
+
+            # Clean test data
+            test_cleaner = Cleaner(self.__test_data)
+            self.__test_data = test_cleaner.clean(self.__identifier_columns)
 
             logger.info("Data loaded and preprocessed successfully.")
         except Exception as e:
@@ -43,12 +48,12 @@ class Controller:
 
     def train(self):
         """
-        Trains the classifier on the training dataset.
+        Trains the classifier on the training dataset using Trainer module.
         """
         if self.__train_data is not None:
-            logger.info("Training model...")
-            self.__classifier.train(self.__train_data)
-            logger.info("Training completed.")
+            logger.info("Preparing Trainer...")
+            trainer = Trainer(self.__classifier)
+            trainer.train(self.__train_data)
             print("[MODEL] Training completed.")
         else:
             logger.warning("No training data available.")
@@ -56,12 +61,12 @@ class Controller:
 
     def evaluate(self):
         """
-        Evaluates the model on the test dataset.
+        Evaluates the model on the test dataset using Validator module.
         """
         if self.__test_data is not None and self.__test_labels is not None:
-            logger.info("Evaluating model...")
-            accuracy = self.__classifier.evaluate(self.__test_data, self.__test_labels)
-            logger.info("Evaluation completed. Accuracy: %.2f%%", accuracy * 100)
+            logger.info("Starting evaluation using Validator...")
+            validator = Validator(self.__classifier)
+            accuracy = validator.evaluate(self.__test_data, self.__test_labels)
             print(f"[EVALUATION] Accuracy on test set: {accuracy * 100:.2f}%")
         else:
             logger.warning("Test data not available.")
