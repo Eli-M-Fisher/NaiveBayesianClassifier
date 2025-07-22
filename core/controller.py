@@ -4,6 +4,7 @@ from inspector.dataset_inspector import DatasetInspector
 from core.logger import logger
 from core.cleaner import Cleaner  # ← new
 from core.trainer import Trainer  # ← new
+from core.validator import Validator  # ← new
 import pandas as pd
 
 
@@ -60,12 +61,12 @@ class Controller:
 
     def evaluate(self):
         """
-        Evaluates the model on the test dataset.
+        Evaluates the model on the test dataset using Validator module.
         """
         if self.__test_data is not None and self.__test_labels is not None:
-            logger.info("Evaluating model...")
-            accuracy = self.__classifier.evaluate(self.__test_data, self.__test_labels)
-            logger.info("Evaluation completed. Accuracy: %.2f%%", accuracy * 100)
+            logger.info("Starting evaluation using Validator...")
+            validator = Validator(self.__classifier)
+            accuracy = validator.evaluate(self.__test_data, self.__test_labels)
             print(f"[EVALUATION] Accuracy on test set: {accuracy * 100:.2f}%")
         else:
             logger.warning("Test data not available.")
