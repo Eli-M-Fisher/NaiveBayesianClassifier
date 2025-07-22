@@ -2,6 +2,7 @@ from core.data_loader import DataLoader
 from model.naive_bayes import NaiveBayesClassifier
 from inspector.dataset_inspector import DatasetInspector
 from core.logger import logger
+from core.cleaner import Cleaner  # new
 import pandas as pd
 
 
@@ -30,11 +31,13 @@ class Controller:
             self.__train_data, self.__test_data, self.__test_labels = self._data_loader.load_data()
             self.__analysis = self.__inspector.inspect()
 
-            if self.__identifier_columns:
-                logger.info("Ignoring identifier columns: %s", self.__identifier_columns)
-                print(f"[INFO] Ignored identifier columns during training: {self.__identifier_columns}")
-                self.__train_data = self.__train_data.drop(columns=self.__identifier_columns, errors="ignore")
-                self.__test_data = self.__test_data.drop(columns=self.__identifier_columns, errors="ignore")
+            # Clean training data
+            train_cleaner = Cleaner(self.__train_data)
+            self.__train_data = train_cleaner.clean(self.__identifier_columns)
+
+            # Clean test data
+            test_cleaner = Cleaner(self.__test_data)
+            self.__test_data = test_cleaner.clean(self.__identifier_columns)
 
             logger.info("Data loaded and preprocessed successfully.")
         except Exception as e:
