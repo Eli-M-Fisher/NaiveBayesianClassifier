@@ -2,7 +2,8 @@ from core.data_loader import DataLoader
 from model.naive_bayes import NaiveBayesClassifier
 from inspector.dataset_inspector import DatasetInspector
 from core.logger import logger
-from core.cleaner import Cleaner  # new
+from core.cleaner import Cleaner  # ← new
+from core.trainer import Trainer  # ← new
 import pandas as pd
 
 
@@ -46,12 +47,12 @@ class Controller:
 
     def train(self):
         """
-        Trains the classifier on the training dataset.
+        Trains the classifier on the training dataset using Trainer module.
         """
         if self.__train_data is not None:
-            logger.info("Training model...")
-            self.__classifier.train(self.__train_data)
-            logger.info("Training completed.")
+            logger.info("Preparing Trainer...")
+            trainer = Trainer(self.__classifier)
+            trainer.train(self.__train_data)
             print("[MODEL] Training completed.")
         else:
             logger.warning("No training data available.")
