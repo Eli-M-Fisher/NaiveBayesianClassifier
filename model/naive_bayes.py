@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import math
 from collections import defaultdict
+from model.base_model import BaseModel  # ← new
 
 
-class NaiveBayesClassifier:
+class NaiveBayesClassifier(BaseModel):  # ← new
     def __init__(self):
         self.__class_priors = {}  # Prior probabilities for each class
         self.__feature_likelihoods = {}  # Nested dict: {feature: {value: {class: prob}}}
