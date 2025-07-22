@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  api_service:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - classifier_service
+    environment:
+      - CLASSIFIER_URL=http://classifier_service:9000
+    volumes:
+      - .:/app
+
+  classifier_service:
+    build:
+      context: ./classifier_service
+      dockerfile: ../docker/classifier.Dockerfile
+    ports:
+      - "9000:9000"
