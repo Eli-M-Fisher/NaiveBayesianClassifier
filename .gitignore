@@ -8,8 +8,24 @@ __pycache__/
 # Ignore PyCharm project files
 .idea/
 
+# macOS system file
 .DS_Store
 
 # Ignore data and logs
 data/
 logs/
+*.log
+
+# Ignore trained models
+*.pkl
+classifier_service/model/
+
+# Ignore Jupyter notebooks
+*.ipynb
+
+# Ignore backup files
+*.bak
+*~
+*.pkl
+classifier_service/model/
+*.log
